@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">講師個人頁面 - 扶輪社</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            line-height: 1.6;
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+
+        .lecturer-card {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .top-decoration {
+            height: 8px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+        }
+
+        .lecturer-info {
+            padding: 24px;
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .lecturer-image {
+            aspect-ratio: 5/3;
+            width: 100%;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .lecturer-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .lecturer-image.placeholder {
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .lecturer-name {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .lecturer-name h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .topics-section {
+            padding: 24px;
+        }
+
+        .topics-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #e5e7eb;
+            position: relative;
+            margin-top: 0;
+        }
+
+        .topics-title::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            border-radius: 2px;
+        }
+
+        .topics-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .topic-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .topic-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .topic-item:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .topic-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            color: #4f46e5;
+            flex-shrink: 0;
+        }
+
+        .topic-text {
+            font-size: 16px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6b7280;
+            padding: 20px;
+        }
+
+        .error {
+            text-align: center;
+            color: #dc2626;
+            padding: 20px;
+            background-color: #fee2e2;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+
+        /* 手機版響應式 */
+        @media (max-width: 640px) {
+            body {
+                padding: 10px;
+            }
+            
+            .lecturer-card {
+                margin: 10px auto;
+                border-radius: 8px;
+            }
+            
+            .lecturer-info,
+            .topics-section {
+                padding: 16px;
+            }
+            
+            .topics-title {
+                font-size: 18px;
+            }
+            
+            .topic-item {
+                padding: 12px 16px;
+            }
+            
+            .topic-text {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="lecturer-card">
+        <div class="top-decoration"></div>
+        
+        <div class="lecturer-info">
+            <div class="lecturer-image placeholder" id="lecturer-image">
+                載入中...
+            </div>
+            
+            <div class="lecturer-name">
+                <h1 id="lecturer-name">載入中...</h1>
+            </div>
+        </div>
+        
+        <div class="topics-section">
+            <h2 class="topics-title">可演講主題</h2>
+            
+            <ul class="topics-list" id="topics-list">
+                <li class="loading">載入主題中...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 從網址參數獲取資料
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                name: params.get('name') || '講師姓名',
+                image: params.get('image') || '',
+                topics: params.get('topics') || '數位轉型與企業創新策略|領導力發展與團隊管理|職場溝通與簡報技巧'
+            };
+        }
+
+        // 建立主題項目HTML
+        function createTopicItem(topic) {
+            return `
+                <li class="topic-item">
+                    <svg class="topic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="topic-text">${topic.trim()}</span>
+                </li>
+            `;
+        }
+
+        // 初始化頁面
+        function initializePage() {
+            try {
+                const params = getUrlParams();
+                
+                // 設定頁面標題
+                document.getElementById('page-title').textContent = `${params.name} - 講師個人頁面`;
+                
+                // 設定講師姓名
+                document.getElementById('lecturer-name').textContent = params.name;
+                
+                // 設定講師照片
+                const imageContainer = document.getElementById('lecturer-image');
+                if (params.image && params.image.trim() !== '') {
+                    imageContainer.innerHTML = `<img src="${params.image}" alt="${params.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='照片載入失敗';">`;
+                    imageContainer.classList.remove('placeholder');
+                } else {
+                    imageContainer.innerHTML = '尚無照片';
+                    imageContainer.classList.add('placeholder');
+                }
+                
+                // 設定演講主題
+                const topicsList = document.getElementById('topics-list');
+                const topics = params.topics.split('|').filter(topic => topic.trim() !== '');
+                
+                if (topics.length > 0) {
+                    topicsList.innerHTML = topics.map(createTopicItem).join('');
+                } else {
+                    topicsList.innerHTML = '<li class="error">未設定演講主題</li>';
+                }
+                
+            } catch (error) {
+                console.error('初始化頁面時發生錯誤:', error);
+                document.getElementById('topics-list').innerHTML = '<li class="error">載入資料時發生錯誤</li>';
+            }
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+        
+        // 處理網址變更
+        window.addEventListener('popstate', initializePage);
+    </script>
+</body>
+</html>
